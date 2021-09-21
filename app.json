@@ -1,7 +1,7 @@
 {
   "name": "price-bee",
   "description": "A Discord bot to show token prices.",
-  "repository": "https://github.com/1Hive/price-bee",
+  "repository": "https://github.com/hernandoagf/hny-price-bee",
   "logo": "https://i.imgur.com/dRxtULu.png",
   "keywords": ["node", "discord", "1Hive", "token"],
   "env": {

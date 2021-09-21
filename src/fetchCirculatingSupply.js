@@ -1,19 +1,30 @@
-const fetch = require('node-fetch')
+const gql = require('graphql-tag')
+const { GraphQLWrapper } = require('@aragon/connect-thegraph')
 
-const fetchTokens = async () => {
-  const tokens = await (await fetch('https://api.coingecko.com/api/v3/coins/list')).json()
-  return tokens
+const SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/onbjerg/honey'
+
+const CIRC_SUPPLY_QUERY = gql`
+  query {
+    total: holder(id: "0x0000000000000000000000000000000000000000") {
+      amount
+    }
+    pool: holder(id: "0x4ba7362f9189572cbb1216819a45aba0d0b2d1cb") {
+      amount
+    }
+  }
+`
+
+const fetchData = async () => {
+  const graphqlClient = new GraphQLWrapper(SUBGRAPH_URL)
+  const result = await graphqlClient.performQuery(CIRC_SUPPLY_QUERY)
+
+  if (!result.data) return undefined
+  return result
 }
 
-exports.getCoingeckoCircSupply = async (botTokenSymbol) => {
-  const tokens = await fetchTokens()
-  const tokenFound = tokens.find((token) => token.symbol === botTokenSymbol.toLowerCase())
-
-  if (!tokenFound) return undefined
-
-  const tokenId = tokenFound.id
-  const tokenData = await (await fetch(`https://api.coingecko.com/api/v3/coins/${tokenId}`)).json()
-  const circSupply = tokenData.market_data.circulating_supply
+exports.getCircSupply = async () => {
+  const res = await fetchData()
+  const circSupply = (Math.abs(res.data.total.amount) - res.data.pool.amount) / 1e18
 
   // eslint-disable-next-line
   return circSupply
